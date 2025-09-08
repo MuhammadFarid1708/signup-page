@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <title>User Signup Dashboard</title>
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif; /* Use Poppins font */
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px HLSColor(270, 0, 0)a(0.1);
+            animation: fadeIn 0.5s ease-out; /* Page-load animation */
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+            font-weight: 600;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .error-message {
+            color: #d93025;
+            font-size: 13px;
+            min-height: 15px;
+        }
+        
+        /* Styles for password container and icon */
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .password-container input {
+            width: 100%;
+            padding-right: 40px; /* Make space for icon */
+        }
+        .password-container i {
+            position: absolute;
+            right: 15px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .submit-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        
+        /* Animation keyframes */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Your Account</h1>
+        <form id="signupForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <div id="usernameError" class="error-message"></div>
+            <input type="email" id="email" placeholder="Email" required>
+            <div id="emailError" class="error-message"></div>
+            <div class="password-container">
+                <input type="password" id="password" placeholder="Password" required>
+                <i class="fas fa-eye" id="togglePassword"></i>
+            </div>
+            <div id="passwordError" class="error-message"></div>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-user-plus"></i> Sign Up Now!
+            </button>
+        </form>
+
+        <h2>Registered Users</h2>
+        <table id="userTable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const signupForm = document.getElementById('signupForm');
+        const userTableBody = document.getElementById('userTable').querySelector('tbody');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const usernameError = document.getElementById('usernameError');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+
+        function validateInputs() {
+            let isValid = true;
+            usernameError.textContent = '';
+            emailError.textContent = '';
+            passwordError.textContent = '';
+            if (!usernameInput.value.trim()) {
+                usernameError.textContent = 'Username is required';
+                isValid = false;
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailInput.value.trim()) {
+                emailError.textContent = 'Email is required';
+                isValid = false;
+            } else if (!emailRegex.test(emailInput.value.trim())) {
+                emailError.textContent = 'Invalid email format';
+                isValid = false;
+            }
+            if (!passwordInput.value.trim()) {
+                passwordError.textContent = 'Password is required';
+                isValid = false;
+            } else if (passwordInput.value.length < 6) {
+                passwordError.textContent = 'Password must be at least 6 characters';
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function renderUsers() {
+            userTableBody.innerHTML = '';
+            users.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>
+                        <button class="delete-btn" data-index="${index}">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </td>
+                `;
+                userTableBody.appendChild(row);
+            });
+        }
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!validateInputs()) return;
+            const hashedPassword = await hashPassword(passwordInput.value);
+            const newUser = {
+                username: usernameInput.value.trim(),
+                email: emailInput.value.trim(),
+                password: hashedPassword
+            };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            renderUsers();
+            usernameInput.value = '';
+            emailInput.value = '';
+            passwordInput.value = '';
+        });
+
+        userTableBody.addEventListener('click', (e) => {
+            // Use .closest() to ensure the click works even if the user clicks the icon inside the button
+            const button = e.target.closest('.delete-btn');
+            if (button) {
+                const index = parseInt(button.dataset.index);
+                users.splice(index, 1);
+                localStorage.setItem('users', JSON.stringify(users));
+                renderUsers();
+            }
+        });
+        
+        // Show/Hide Password Toggle Logic
+        const togglePassword = document.getElementById('togglePassword');
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // Initial render of users from localStorage
+        renderUsers();
+    </script>
+</body>
+</html>
